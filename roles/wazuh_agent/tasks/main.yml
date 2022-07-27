@@ -1,0 +1,60 @@
+---
+- name: install gnupg2
+  apt:
+    update_cache: yes
+    name: gnupg2
+    state: present
+  become: yes
+
+- name: install wazuh repository key
+  apt_key:
+    url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+    state: present
+
+- name: add wazuh repository
+  ansible.builtin.apt_repository:
+    repo: deb https://packages.wazuh.com/4.x/apt/ stable main
+    state: present
+    filename: wazuh
+  tags: update_wazuh_agent
+
+- name: install wazuh-agent
+  apt:
+    update_cache: yes
+    name: wazuh-agent
+    state: latest
+  become: yes
+  tags: update_wazuh_agent
+
+- name: add manger IP to ossec.conf
+  replace:
+    path: /var/ossec/etc/ossec.conf
+    regexp: 'MANAGER_IP'
+    replace: "{{ wazuh_manager_ip }}"
+
+- name: copy yara.sh
+  ansible.builtin.copy:
+    src: yara.sh
+    dest: /var/ossec/active-response/bin
+    owner: root
+    group: ossec
+    mode: '0750'
+
+- name: register agent
+  ansible.builtin.command: /var/ossec/bin/agent-auth -m "{{ wazuh_manager_ip }}" -P "{{ wazuh_manager_password }}" -G "{{ wazuh_agent_group }}"
+  changed_when: false
+
+- name: reload agent
+  service:
+    daemon_reload: yes
+    name: wazuh-agent
+    enabled: yes
+    state: reloaded
+  tags: update_wazuh_agent
+
+- name: remove wazuh repository
+  ansible.builtin.apt_repository:
+    repo: deb https://packages.wazuh.com/4.x/apt/ stable main
+    state: absent
+    filename: wazuh
+  tags: disable_wazuh, update_wazuh_agent

@@ -1,0 +1,5 @@
+---
+- name: Change timezone
+  community.general.timezone:
+    name: Africa/Nairobi
+  become: yes

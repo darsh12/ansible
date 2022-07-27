@@ -1,0 +1,6 @@
+---
+# handlers file for auditd-wazuh-monitoring
+- name: Reload auditd
+  command:
+    cmd: /usr/sbin/auditctl -R /etc/audit/rules.d/wazuh.rules
+

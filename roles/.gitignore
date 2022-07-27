@@ -1,0 +1,6 @@
+.idea/
+group_vars/
+production.yaml
+production.ini
+staging.ini
+staging.yml

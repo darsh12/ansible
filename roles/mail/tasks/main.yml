@@ -1,0 +1,62 @@
+---
+- name: prompt relay email
+  pause:
+    prompt: "Please input relay email"
+  register: input_mail_relay_email
+  when: mail_relay_email is not defined
+
+- name: prompt relay smtp password
+  pause:
+    prompt: "Please input mail_relay smtp password"
+  register: input_mail_relay_password
+  when: mail_relay_password is not defined
+
+- name: set relay email from user
+  set_fact:
+    mail_relay_email: "{{ input_mail_relay_email.user_input }}"
+  when: input_mail_relay_email is not skipped
+
+- name: set relay password from user
+  set_fact:
+    mail_relay_password: "{{ input_mail_relay_password.user_input }}"
+  when: input_mail_relay_password is not skipped
+
+################## END FACTS #####################
+
+- name: install packages
+  apt:
+    update_cache: yes
+    name: "{{ packages }}"
+    state: present
+  become: true
+
+- name: copy postfix config file
+  template:
+    src: postfix_config.j2
+    dest: "/etc/postfix/main.cf"
+  become: true
+
+- name: configure sasl_passwd
+  template:
+    src: sasl_passwd.j2
+    dest: "/etc/postfix/sasl_passwd"
+  become: true
+
+- name: create sasl_passwd.db
+  command: postmap /etc/postfix/sasl_passwd
+  args:
+    creates: "/etc/postfix/sasl_passwd.db"
+  become: true
+
+- name: cleanup sasl_passwd
+  file:
+    path: "/etc/postfix/sasl_passwd"
+    state: absent
+  become: true
+
+- name: Change ownership
+  file:
+    path: "/etc/postfix/sasl_passwd.db"
+    mode: 0600
+  notify: Restart postfix
+  become: true

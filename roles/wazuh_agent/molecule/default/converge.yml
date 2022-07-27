@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: wazuh_agent
+      include_role:
+        name: wazuh_agent
+      vars:
+        wazuh_manager_password: password
+        wazuh_agent_group: group

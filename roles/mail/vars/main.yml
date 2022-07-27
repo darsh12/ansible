@@ -1,0 +1,5 @@
+---
+packages:
+  - postfix
+  - libsasl2-modules
+  - mailutils

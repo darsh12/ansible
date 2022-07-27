@@ -1,0 +1,7 @@
+.idea/
+group_vars/
+hosts.ini
+production.yml
+production.ini
+staging.ini
+staging.yml

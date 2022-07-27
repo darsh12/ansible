@@ -1,0 +1,73 @@
+---
+- name: install git
+  apt:
+    update_cache: yes
+    name: git
+    state: present
+  become: yes
+
+- name: install oh-my-zsh
+  include_role:
+    name: gantsign.oh-my-zsh
+  loop_control:
+    loop_var:
+      - "{{ users }}"
+
+- name: clone tpm
+  git:
+    repo: "https://github.com/tmux-plugins/tpm.git"
+    dest: "~{{ item.username }}/.tmux/plugins/tpm"
+    version: master
+  become: yes
+  become_user: "{{ item.username }}"
+  with_items: "{{ users }}"
+
+- name: create .vim folder
+  file:
+    path: "~{{ item.username }}/.vim/autoload"
+    state: directory
+    mode: 0755
+  become: yes
+  become_user: "{{ item.username }}"
+  with_items: "{{ users }}"
+
+- name: clone vim plug
+  get_url:
+    url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    dest: "~{{ item.username }}/.vim/autoload/plug.vim"
+    force: yes
+  become: yes
+  become_user: "{{ item.username }}"
+  with_items: "{{ users }}"
+
+- name: clone dotfiles
+  git:
+    repo: https://github.com/darsh12/dotfiles.git
+    dest: "~{{ item.username }}/.dotfiles"
+    version: master
+    force: yes
+  become: yes
+  become_user: "{{ item.username }}"
+  with_items: "{{ users }}"
+  tags:
+    - dotfiles
+
+- name: execute dotfile installation
+  command: "./install-profile linux"
+  args:
+    chdir: "~{{ item.username }}/.dotfiles"
+  become: yes
+  become_user: "{{ item.username }}"
+  with_items: "{{ users }}"
+  changed_when: false
+  tags:
+    - dotfiles
+
+- name: create .customenv file
+  ansible.builtin.file:
+    path: "~{{ item.username }}/.customenv"
+    state: touch
+    mode: 0755
+  become: yes
+  become_user: "{{ item.username }}"
+  with_items: "{{ users }}"

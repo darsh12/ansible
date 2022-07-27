@@ -1,0 +1,22 @@
+---
+- name: configure auditd for wazuh
+  block:
+    - name: install auditd
+      apt:
+        name: auditd
+        state: present
+    - name: install audispd-plugins
+      apt:
+        name: audispd-plugins
+        state: present
+    - name: configure auditd rules to monitor root commands
+      template:
+        src: wazuh.rules
+        dest: /etc/audit/rules.d/wazuh.rules
+        owner: root
+        group: root
+        mode: 0640
+      notify: Reload auditd
+
+  when: not(ansible_virtualization_type is defined and ansible_virtualization_type == "lxc")
+  become: yes

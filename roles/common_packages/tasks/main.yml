@@ -1,0 +1,130 @@
+---
+- name: update all packages to the latest version
+  apt:
+    update_cache: yes
+  become: yes
+  tags: update
+
+- name: upgrade all packages to the latest version
+  apt:
+    upgrade: safe
+  become: yes
+  tags: update
+
+- name: autoclean packages
+  apt:
+    autoclean: yes
+  become: yes
+  tags: update
+
+- name: install relatively used packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  become: yes
+
+- name: update font cache
+  command: fc-cache -fv
+  become: yes
+  register: fc_output
+  failed_when: fc_output.rc != 0
+  changed_when: '"fc-cache: succeeded" not in fc_output.stdout'
+
+- name: install antibody
+  shell: set -o pipefail && curl -sfL git.io/antibody | sh -s - -b /usr/local/bin
+  args:
+    executable: /bin/bash
+  register: antibody_output
+  changed_when: '"getantibody/antibody info installed /usr/local/bin/antibody" in antibody_output.stdout'
+  become: yes
+  tags: update
+
+## https://stackoverflow.com/questions/50966777/ansible-download-latest-release-binary-from-github-repo
+- name: get latest fd release
+  uri:
+    url: https://api.github.com/repos/sharkdp/fd/releases/latest
+  register: fd_latest
+  tags: update
+
+- name: "installing fd {{ fd_latest.json.tag_name }}"
+  apt:
+    deb: "https://github.com/sharkdp/fd/releases/download/{{ fd_latest.json.tag_name }}/fd_{{ fd_latest.json.tag_name | regex_replace('v') }}_amd64.deb"
+  become: yes
+  tags: update
+
+- name: get latest ripgrep release
+  uri:
+    url: https://api.github.com/repos/BurntSushi/ripgrep/releases/latest
+  register: ripgrep_latest
+
+- name: "installing ripgrep {{ ripgrep_latest.json.tag_name }}"
+  apt:
+    deb: "https://github.com/BurntSushi/ripgrep/releases/download/{{ ripgrep_latest.json.tag_name }}/ripgrep_{{ ripgrep_latest.json.tag_name }}_amd64.deb"
+  become: yes
+
+- name: get latest bat release
+  uri:
+    url: https://api.github.com/repos/sharkdp/bat/releases/latest
+  register: bat_latest
+  tags: update
+
+- name: "installing bat {{ bat_latest.json.tag_name }}"
+  apt:
+    deb: "https://github.com/sharkdp/bat/releases/download/{{ bat_latest.json.tag_name }}/bat_{{ bat_latest.json.tag_name | regex_replace('v') }}_amd64.deb"
+    only_upgrade: yes
+  become: yes
+  tags: update
+
+- name: get latest fzf release
+  uri:
+    url: https://api.github.com/repos/junegunn/fzf/releases/latest
+  register: fzf_latest
+  tags: update
+
+- name: "installing fzf {{ bat_latest.json.tag_name }}"
+  ansible.builtin.unarchive:
+    src: "https://github.com/junegunn/fzf/releases/download/{{ fzf_latest.json.tag_name }}/fzf-{{ fzf_latest.json.tag_name }}-linux_amd64.tar.gz"
+    dest: /usr/local/bin
+    remote_src: yes
+    mode: 0755
+  become: yes
+  tags: update
+
+- name: create directory for fzf key-binding
+  ansible.builtin.file:
+    path: /usr/share/doc/fzf/examples
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: yes
+
+- name: copy fzf key-bindings
+  ansible.builtin.copy:
+    src: fzf-key-bindings.zsh
+    dest: /usr/share/doc/fzf/examples/key-bindings.zsh
+    owner: root
+    group: root
+    mode: 0644
+  become: yes
+
+- name: install powerline-status
+  pip:
+    executable: pip3
+    name: powerline-status
+    extra_args: --upgrade
+    state: present
+  become: yes
+  tags: update
+
+- name: get latest jq url
+  uri:
+    url: https://api.github.com/repos/stedolan/jq/releases/latest
+  register: jq_latest
+
+- name: "installing jq {{ jq_latest.json.tag_name }}"
+  get_url:
+    url: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64"
+    dest: "/usr/local/bin/jq"
+    mode: '0755'
+  become: yes

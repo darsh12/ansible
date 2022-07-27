@@ -1,0 +1,7 @@
+## Monitor malicious commands
+-a exit,always -F auid=1000 -F egid!=994 -F auid!=-1 -F arch=b32 -S execve -k audit-wazuh-c
+-a exit,always -F auid=1000 -F egid!=994 -F auid!=-1 -F arch=b64 -S execve -k audit-wazuh-c
+
+## Monitor root commands
+-a exit,always -F euid=0 -F arch=b64 -S execve -k  audit-wazuh-c
+-a exit,always -F euid=0 -F arch=b32 -S execve -k  audit-wazuh-c

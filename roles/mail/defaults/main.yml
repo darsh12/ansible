@@ -1,0 +1,3 @@
+---
+smtp_address: smtp.example.com
+relay_port: 465

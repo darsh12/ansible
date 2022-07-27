@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: multiple_users
+      include_role:
+        name: multiple_users
+      vars:
+        users:
+          - username: root

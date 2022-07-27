@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: auditd-wazuh-monitoring
+      include_role:
+        name: auditd-wazuh-monitoring

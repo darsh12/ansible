@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: mail
+      include_role:
+        name: mail
+      vars:
+        mail_relay_email: relay@example.com
+        mail_relay_password: relaypassword
