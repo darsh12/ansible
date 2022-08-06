@@ -71,3 +71,12 @@
   become: yes
   become_user: "{{ item.username }}"
   with_items: "{{ users }}"
+
+- name: create .tmux.custom.conf file
+  ansible.builtin.file:
+    path: "~{{ item.username }}/.tmux.custom.conf"
+    state: touch
+    mode: 0755
+  become: yes
+  become_user: "{{ item.username }}"
+  with_items: "{{ users }}"
