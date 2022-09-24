@@ -16,6 +16,7 @@
     repo: deb https://packages.wazuh.com/4.x/apt/ stable main
     state: present
     filename: wazuh
+  become: yes
   tags: update_wazuh_agent
 
 - name: install wazuh-agent
@@ -50,6 +51,7 @@
     name: wazuh-agent
     enabled: yes
     state: reloaded
+  become: yes
   tags: update_wazuh_agent
 
 - name: remove wazuh repository
@@ -57,4 +59,5 @@
     repo: deb https://packages.wazuh.com/4.x/apt/ stable main
     state: absent
     filename: wazuh
+  become: yes
   tags: disable_wazuh, update_wazuh_agent
