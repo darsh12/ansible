@@ -33,6 +33,7 @@
     path: /var/ossec/etc/ossec.conf
     regexp: 'MANAGER_IP'
     replace: "{{ wazuh_manager_ip }}"
+  become: yes
 
 - name: copy yara.sh
   ansible.builtin.copy:
@@ -41,10 +42,12 @@
     owner: root
     group: ossec
     mode: '0750'
+  become: yes
 
 - name: register agent
   ansible.builtin.command: /var/ossec/bin/agent-auth -m "{{ wazuh_manager_ip }}" -P "{{ wazuh_manager_password }}" -G "{{ wazuh_agent_group }}"
   changed_when: false
+  become: yes
 
 - name: reload agent
   service:
