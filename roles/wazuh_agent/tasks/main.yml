@@ -10,6 +10,7 @@
   apt_key:
     url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
     state: present
+  become: yes
 
 - name: add wazuh repository
   ansible.builtin.apt_repository:
