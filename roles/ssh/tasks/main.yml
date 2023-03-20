@@ -4,4 +4,5 @@
     src: ssh.j2
     dest: /etc/ssh/sshd_config
     mode: 0644
+  become: true
   notify: Restart ssh
